@@ -1,0 +1,10 @@
+cradle:
+  cabal:
+    - path: ./src/lib
+      component: "jemima:jemima"
+
+    - path: ./src/client
+      component: "jemima:jemima-client"
+
+    - path: ./src/server
+      component: "jemima:jemima-server"

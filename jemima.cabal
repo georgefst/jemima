@@ -1,0 +1,111 @@
+cabal-version:       2.4
+name:                jemima
+version:             0.1.0.0
+author:              George Thomas
+maintainer:          george.thomas@drisq.com
+build-type:          Simple
+
+common common
+  build-depends:       base >=4.12 && <4.13,
+                       aeson,
+                       binary,
+                       bytestring,
+                       composition,
+                       conduit,
+                       containers,
+                       directory,
+                       dlist,
+                       extra,
+                       filepath,
+                       generic-lens,
+                       gi-cairo,
+                       gi-gdk,
+                       gi-gio,
+                       gi-gtk,
+                       gi-gtk-declarative,
+                       gi-gtk-declarative-app-simple,
+                       haskell-gi-base,
+                       microlens,
+                       monad-loops,
+                       MonadRandom,
+                       mtl,
+                       network,
+                       pipes,
+                       pretty-simple,
+                       process,
+                       random,
+                       random-shuffle,
+                       safe,
+                       servant,
+                       servant-client,
+                       split,
+                       stm,
+                       svg-tree,
+                       text,
+                       transformers,
+                       vector,
+                       websockets,
+  default-language:    Haskell2010
+  default-extensions:  ConstraintKinds
+                       BlockArguments
+                       DataKinds
+                       DeriveAnyClass
+                       DeriveFoldable
+                       DeriveFunctor
+                       DeriveGeneric
+                       DeriveTraversable
+                       DerivingStrategies
+                       DuplicateRecordFields
+                       EmptyCase
+                       FlexibleContexts
+                       FlexibleInstances
+                       FunctionalDependencies
+                       GADTs
+                       GeneralisedNewtypeDeriving
+                       LambdaCase
+                       MultiParamTypeClasses
+                       MultiWayIf
+                       NamedFieldPuns
+                       OverloadedLabels
+                       OverloadedLists
+                       OverloadedStrings
+                       PartialTypeSignatures
+                       PatternSynonyms
+                       QuantifiedConstraints
+                       RankNTypes
+                       RecordWildCards
+                       ScopedTypeVariables
+                       StandaloneDeriving
+                       TupleSections
+                       TypeApplications
+                       TypeFamilies
+                       TypeFamilyDependencies
+                       TypeOperators
+                       ViewPatterns
+  ghc-options:         -Wall
+                       -fdefer-typed-holes
+                       -Wno-unrecognised-pragmas
+                       -threaded
+                       -Wno-unused-imports
+                       -Wincomplete-uni-patterns
+                       -Wincomplete-record-updates
+
+executable jemima-client
+  import:              common
+  hs-source-dirs:      src/client
+  main-is:             Client.hs
+  build-depends:       jemima
+  if os(windows)
+    ghc-options:       -optl-mwindows
+
+executable jemima-server
+  import:              common
+  hs-source-dirs:      src/server
+  main-is:             Server.hs
+  build-depends:       jemima,
+                       optparse-generic,
+
+library
+  import:              common
+  hs-source-dirs:      src/lib
+  exposed-modules:     Poker
