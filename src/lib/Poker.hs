@@ -276,7 +276,7 @@ highestStraight (r:rs) =
             c:cs -> case compare c expected of
                 EQ -> go (n+1) candidate (pred expected) cs -- found what we wanted - increment count
                 LT -> go 1 c (pred c) cs -- chain broken - c is the new candidate
-                GT -> go n candidate expected cs -- c
+                GT -> go n candidate expected cs -- c has the same rank as the previous card
     in  go 1 r (pred r) rs
 
 
