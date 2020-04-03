@@ -231,7 +231,7 @@ cardImage c = "rsc" </>
                         Diamonds -> 'D'
                         Hearts -> 'H'
                         Spades -> 'S'
-                in  r' : pure s'
+                in  [r', s']
 
 
 {- State update -}
