@@ -34,7 +34,11 @@ import qualified Data.Text.IO as T
 import Data.Vector (Vector)
 import qualified Data.Vector as Vector
 import GHC.Generics (Generic)
-import qualified Network.WebSockets as WS
+import Network.HTTP.Types
+import Network.Wai
+import Network.Wai.Handler.WebSockets
+import Network.Wai.Handler.Warp
+import Network.WebSockets
 import Text.Pretty.Simple (pPrint)
 
 import Poker
@@ -47,12 +51,12 @@ instance ParseRecord Opts where
     parseRecord = parseRecordWithModifiers defaultModifiers{shortNameModifier = firstLetter}
 
 data ServerState = ServerState
-    { clients :: Map Player WS.Connection
+    { clients :: Map Player Connection
     , game :: GameState
     } deriving Generic
 
 -- those who have connected during the current hand
-type PlayerQueue = TVar [(Player, WS.Connection)]
+type PlayerQueue = TVar [(Player, Connection)]
 
 --TODO allow save/load game state from JSON (would need to wait for correct no. of players)
 main :: IO ()
@@ -65,32 +69,33 @@ main = do
             { clients = []
             , game = s
             }
-    void $ forkIO $ WS.runServer address port $ application queue
+        opts = setPort port defaultSettings --TODO other settings?
+    void $ forkIO $ runSettings opts $ app queue
     T.putStrLn "Server started."
     evalStateT (mainLoop queue) ss
 
-application :: PlayerQueue -> WS.ServerApp
-application queue pending = do
-    conn <- WS.acceptRequest pending
-    WS.withPingThread conn 30 (return ()) do
-        name <- WS.receiveData conn
+app :: PlayerQueue -> Application
+app q = websocketsOr defaultConnectionOptions (appWS q) backupApp
+  where backupApp _ respond = respond $ responseLBS status400 [] "Jemima server only accepts WebSocket requests"
+
+appWS :: PlayerQueue -> ServerApp
+appWS queue pending = do
+    pPrint $ pendingRequest pending
+    conn <- acceptRequest pending
+    withPingThread conn 30 (return ()) do
+        name <- receiveData conn
         let player = Player name
         --TODO disallow duplicated names, maybe whitespace, max length
         atomically $ modifyTVar' queue ((player, conn) :)
-        T.putStrLn $ name <> " joined"
-        forever $ threadDelay maxBound
-        --TODO work out why we can't let this thread die after we've added the connection to queue
-            -- this is key to simplifying client
-
--- --TODO what to do if a player drops? probably whatever we would do if they went bankrupt...
--- disconnect = T.putStrLn $ name <> " disconnected"
--- talk player conn `finally` disconnect
--- --TODO bit pointless now really (indeed client never sends messages)
---     -- this is really a placeholder for whatever we do to await messages from clients
--- talk :: Player -> WS.Connection -> IO ()
--- talk p c = forever do
---     msg <- WS.receiveData c
---     T.putStrLn (view #name p <> ": " <> msg)
+        joined player
+        flip finally (disconnected player) $ forever $ threadDelay maxBound
+  where
+    joined Player{..} = T.putStrLn $ name <> " joined"
+    disconnected Player{..} = T.putStrLn $ name <> " disconnected"
+    --TODO what to do if a player drops?
+        -- fold and remove at start of next hand?
+            -- or wait for player with same name to reconnect?
+                -- or something in between with a timeout?
 
 mainLoop :: PlayerQueue -> StateT ServerState IO ()
 mainLoop queue = forever do --TODO output text telling current state, and to press enter
@@ -112,7 +117,7 @@ mainLoop queue = forever do --TODO output text telling current state, and to pre
                 Nothing -> liftIO $ new s
     put s'
     forM_ (Map.toList clients) $ \(p,c) ->
-        liftIO $ WS.sendTextData c $ encode $ playerState p game
+        liftIO $ sendTextData c $ encode $ playerState p game
 
     where
         -- add clients from queue to game, and begin new hand

@@ -25,6 +25,7 @@ common common
                        gi-gtk-declarative,
                        gi-gtk-declarative-app-simple,
                        haskell-gi-base,
+                       http-types,
                        microlens,
                        monad-loops,
                        MonadRandom,
@@ -44,6 +45,9 @@ common common
                        text,
                        transformers,
                        vector,
+                       wai,
+                       wai-websockets,
+                       warp,
                        websockets,
   default-language:    Haskell2010
   default-extensions:  ConstraintKinds

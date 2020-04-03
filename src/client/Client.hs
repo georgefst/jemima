@@ -278,7 +278,8 @@ startWebApp chan cfg@Config{..} = void $ forkIO do
     case readMaybe $ T.unpack port of
         Nothing -> return ()
         Just p -> handle
-            (\(e :: IOException) ->
+            (\(e :: IOException) -> --TODO handle more
+                -- e.g. the MalformedResponse we get when server issues 'rejectRequest'
                 putMVar chan $ ConnectFailed $ ("Connection error: " <>) $ T.pack $ ioeGetErrorString e)
             (void $ WS.runClient (T.unpack address) p "/" $ webApp username chan)
 
