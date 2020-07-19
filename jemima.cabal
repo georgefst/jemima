@@ -6,7 +6,7 @@ maintainer:          george.thomas@drisq.com
 build-type:          Simple
 
 common common
-  build-depends:       base >=4.12 && <4.13,
+  build-depends:       base >=4.12 && <4.15,
                        aeson,
                        binary,
                        bytestring,
