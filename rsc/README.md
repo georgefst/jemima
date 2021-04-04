@@ -1,4 +1,4 @@
-The contents of `cards` comes from [here](https://www.me.uk/cards/').
+The contents of `cards` comes from [here](https://www.me.uk/cards/).
 
 The SVGs don't load correctly on Ubuntu 16.04, so we use PNGs as a workaround.
 
